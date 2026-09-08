@@ -1,0 +1,24 @@
+{
+  "name": "Game Arena",
+  "short_name": "GameArena",
+  "description": "A collection of classic games with modern UI",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%23e94560' width='512' height='512' rx='100'/><text x='256' y='320' font-size='280' text-anchor='middle' fill='white'>🎮</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect fill='%23e94560' width='512' height='512' rx='100'/><text x='256' y='320' font-size='280' text-anchor='middle' fill='white'>🎮</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": ["games", "entertainment"],
+  "prefer_related_applications": false
+}
