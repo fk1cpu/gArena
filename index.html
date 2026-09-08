@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#1a1a2e">
+  <meta name="description" content="Game Arena - A collection of classic games with modern UI">
+  <title>Game Arena</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="stylesheet" href="css/styles.css">
+  
+  <!-- Import map for Three.js and Cannon-es (no bundler needed) -->
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "./vendor/three.module.js",
+      "three/addons/": "./vendor/three-addons/",
+      "cannon-es": "./vendor/cannon-es.js"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="app">
+    <!-- Header -->
+    <header class="app-header">
+      <h1>🎮 Game Arena</h1>
+      <nav class="game-nav">
+        <button data-game="tictactoe" title="Tic Tac Toe (1)">⭕</button>
+        <button data-game="memory" title="Memory (2)">🧠</button>
+        <button data-game="minesweeper" title="Minesweeper (3)">💣</button>
+        <button data-game="checkers" title="Checkers (4)">♟️</button>
+        <button data-game="connect4" title="Connect 4 (5)">🔴</button>
+        <button data-game="reversi" title="Reversi (6)">⚫</button>
+        <button data-game="2048" title="2048 (7)">🔢</button>
+        <button data-game="ludo" title="Ludo 3D (8)">🎲</button>
+      </nav>
+      <div class="header-controls">
+        <button id="daily-challenge-btn" title="Daily Challenge">📅 Daily</button>
+        <button id="history-btn" title="Game History">📜 History</button>
+        <button id="mute-btn" title="Toggle Sound (M)">🔊</button>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Game Selection Screen -->
+      <section id="game-select-screen" class="screen active">
+        <h2>Select a Game</h2>
+        <div class="game-cards">
+          <div class="game-card" data-game="tictactoe">
+            <span class="card-icon">⭕</span>
+            <span class="card-name">Tic Tac Toe</span>
+          </div>
+          <div class="game-card" data-game="memory">
+            <span class="card-icon">🧠</span>
+            <span class="card-name">Memory</span>
+          </div>
+          <div class="game-card" data-game="minesweeper">
+            <span class="card-icon">💣</span>
+            <span class="card-name">Minesweeper</span>
+          </div>
+          <div class="game-card" data-game="checkers">
+            <span class="card-icon">♟️</span>
+            <span class="card-name">Checkers</span>
+          </div>
+          <div class="game-card" data-game="connect4">
+            <span class="card-icon">🔴</span>
+            <span class="card-name">Connect 4</span>
+          </div>
+          <div class="game-card" data-game="reversi">
+            <span class="card-icon">⚫</span>
+            <span class="card-name">Reversi</span>
+          </div>
+          <div class="game-card" data-game="2048">
+            <span class="card-icon">🔢</span>
+            <span class="card-name">2048</span>
+          </div>
+          <div class="game-card featured" data-game="ludo">
+            <span class="card-icon">🎲</span>
+            <span class="card-name">Ludo 3D</span>
+            <span class="card-badge">NEW</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Ludo Mode Select Screen -->
+      <section id="ludo-mode-screen" class="screen">
+        <h2>🎲 Ludo 3D - Select Mode</h2>
+        <div class="mode-cards">
+          <div class="mode-card" data-mode="classic">
+            <span class="mode-icon">👑</span>
+            <span class="mode-name">Classic</span>
+            <span class="mode-desc">4 players, full rules</span>
+          </div>
+          <div class="mode-card" data-mode="quick">
+            <span class="mode-icon">⚡</span>
+            <span class="mode-name">Quick</span>
+            <span class="mode-desc">2 players, fast start</span>
+          </div>
+          <div class="mode-card" data-mode="blitz">
+            <span class="mode-icon">⏱️</span>
+            <span class="mode-name">Blitz</span>
+            <span class="mode-desc">45s per turn</span>
+          </div>
+          <div class="mode-card" data-mode="custom">
+            <span class="mode-icon">⚙️</span>
+            <span class="mode-name">Custom</span>
+            <span class="mode-desc">Configure everything</span>
+          </div>
+          <div class="mode-card" data-mode="tournament">
+            <span class="mode-icon">🏆</span>
+            <span class="mode-name">Tournament</span>
+            <span class="mode-desc">Best of 3</span>
+          </div>
+        </div>
+        <button class="back-btn" id="ludo-back-to-select">← Back to Games</button>
+      </section>
+
+      <!-- Custom Config Screen -->
+      <section id="ludo-custom-screen" class="screen">
+        <h2>⚙️ Custom Ludo Configuration</h2>
+        <form id="ludo-custom-form">
+          <div class="form-group">
+            <label>Players: <select id="cfg-players"><option value="2">2</option><option value="3">3</option><option value="4" selected>4</option></select></label>
+          </div>
+          <div class="form-group">
+            <label>Tokens per player: <input type="number" id="cfg-tokens" min="2" max="6" value="4"></label>
+          </div>
+          <div class="form-group">
+            <label><input type="checkbox" id="cfg-safe-cells" checked> Safe cells enabled</label>
+          </div>
+          <div class="form-group">
+            <label>Consecutive 6s limit: <input type="number" id="cfg-six-limit" min="1" max="5" value="3"></label>
+          </div>
+          <div class="form-group">
+            <label>CPU Difficulty: 
+              <select id="cfg-difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-group">
+            <label>Board Theme: 
+              <select id="cfg-theme">
+                <option value="classic">Classic</option>
+                <option value="neon">Neon</option>
+                <option value="pastel">Pastel</option>
+                <option value="dark">Dark</option>
+              </select>
+            </label>
+          </div>
+          <div class="form-actions">
+            <button type="button" id="cfg-cancel">Cancel</button>
+            <button type="submit">Start Game</button>
+          </div>
+        </form>
+      </section>
+
+      <!-- Game Board Area -->
+      <section id="game-board-screen" class="screen">
+        <div id="board-wrap"></div>
+        <div id="game-hud" class="hud">
+          <div class="hud-left">
+            <span id="hud-status">Ready</span>
+          </div>
+          <div class="hud-center" id="hud-turn-indicator"></div>
+          <div class="hud-right">
+            <span id="hud-score"></span>
+            <button id="restart-btn" title="Restart (R)">🔄</button>
+            <button id="exit-btn" title="Exit">✖</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Game History Panel -->
+      <section id="history-panel" class="panel">
+        <div class="panel-header">
+          <h3>📜 Game History</h3>
+          <button class="close-panel">×</button>
+        </div>
+        <div class="panel-content">
+          <table id="history-table">
+            <thead>
+              <tr><th>Game</th><th>Result</th><th>Duration</th><th>Date</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+          <button id="clear-history">Clear History</button>
+        </div>
+      </section>
+
+      <!-- Victory Overlay -->
+      <div id="victory-overlay" class="overlay hidden">
+        <div class="victory-content">
+          <h2 id="victory-title">🎉 Victory!</h2>
+          <p id="victory-message"></p>
+          <div class="victory-buttons">
+            <button id="play-again-btn">Play Again</button>
+            <button id="victory-exit-btn">Exit to Menu</button>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>Game Arena v2.0 | PWA Enabled | Works Offline</p>
+    </footer>
+  </div>
+
+  <script src="js/app.js" type="module"></script>
+  <script>
+    // Register Service Worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(console.error);
+    }
+  </script>
+</body>
+</html>
