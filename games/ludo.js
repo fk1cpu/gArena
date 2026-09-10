@@ -30,24 +30,29 @@ const PLAYER_COLORS = ['red', 'green', 'yellow', 'blue'];
 const CELL_SIZE = 1;
 const BOARD_SIZE = 15;
 
-// Track positions (52 cells clockwise starting from red start)
+// Track positions (52 cells clockwise starting from red start at position 1,6)
 const TRACK_CELLS = [
-  // Red side (bottom-left quadrant area)
+  // Red side (bottom-left quadrant area) - 13 cells
   { x: 1, z: 6 }, { x: 2, z: 6 }, { x: 3, z: 6 }, { x: 4, z: 6 }, { x: 5, z: 6 },
   { x: 6, z: 5 }, { x: 6, z: 4 }, { x: 6, z: 3 }, { x: 6, z: 2 }, { x: 6, z: 1 },
-  { x: 6, z: 0 }, { x: 7, z: 0 }, // Top middle
-  { x: 8, z: 1 }, { x: 8, z: 2 }, { x: 8, z: 3 }, { x: 8, z: 4 }, { x: 8, z: 5 },
-  { x: 9, z: 6 }, { x: 10, z: 6 }, { x: 11, z: 6 }, { x: 12, z: 6 }, { x: 13, z: 6 },
-  { x: 14, z: 7 }, // Right middle
-  { x: 13, z: 8 }, { x: 12, z: 8 }, { x: 11, z: 8 }, { x: 10, z: 8 }, { x: 9, z: 8 },
-  { x: 8, z: 9 }, { x: 8, z: 10 }, { x: 8, z: 11 }, { x: 8, z: 12 }, { x: 8, z: 13 },
-  { x: 7, z: 14 }, // Bottom middle
-  { x: 6, z: 13 }, { x: 6, z: 12 }, { x: 6, z: 11 }, { x: 6, z: 10 }, { x: 6, z: 9 },
-  { x: 5, z: 8 }, { x: 4, z: 8 }, { x: 3, z: 8 }, { x: 2, z: 8 }, { x: 1, z: 8 },
-  { x: 0, z: 7 }   // Left middle
+  { x: 6, z: 0 }, { x: 7, z: 0 }, { x: 8, z: 0 },
+  // Top side - 13 cells
+  { x: 9, z: 0 }, { x: 10, z: 0 }, { x: 11, z: 0 }, { x: 12, z: 0 }, { x: 13, z: 0 },
+  { x: 14, z: 1 }, { x: 14, z: 2 }, { x: 14, z: 3 }, { x: 14, z: 4 }, { x: 14, z: 5 },
+  { x: 14, z: 6 }, { x: 14, z: 7 }, { x: 14, z: 8 },
+  // Right side - 13 cells
+  { x: 13, z: 9 }, { x: 12, z: 9 }, { x: 11, z: 9 }, { x: 10, z: 9 }, { x: 9, z: 9 },
+  { x: 8, z: 10 }, { x: 8, z: 11 }, { x: 8, z: 12 }, { x: 8, z: 13 }, { x: 8, z: 14 },
+  { x: 7, z: 14 }, { x: 6, z: 14 }, { x: 5, z: 14 },
+  // Bottom side - 13 cells
+  { x: 4, z: 14 }, { x: 3, z: 14 }, { x: 2, z: 14 }, { x: 1, z: 14 }, { x: 0, z: 13 },
+  { x: 0, z: 12 }, { x: 0, z: 11 }, { x: 0, z: 10 }, { x: 0, z: 9 }, { x: 0, z: 8 },
+  { x: 1, z: 7 }, { x: 2, z: 7 }, { x: 3, z: 7 }
 ];
 
-// Safe cells (star positions + start positions)
+// Safe cells (star positions + start positions) - indices into TRACK_CELLS
+// Start positions: 0 (red), 13 (green), 26 (yellow), 39 (blue)
+// Star positions: 8, 21, 34, 47
 const SAFE_CELLS = [0, 8, 13, 21, 26, 34, 39, 47];
 
 // Start positions for each player (index into TRACK_CELLS)
