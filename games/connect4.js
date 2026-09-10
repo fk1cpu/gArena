@@ -9,7 +9,8 @@ let gameState = {
   cols: 7,
   currentPlayer: 'red',
   gameActive: true,
-  winner: null
+  winner: null,
+  startTime: 0
 };
 
 let boardEl, statusEl, probBarEl;
@@ -120,6 +121,7 @@ function initGame() {
   gameState.currentPlayer = 'red';
   gameState.gameActive = true;
   gameState.winner = null;
+  gameState.startTime = Date.now();
   
   renderBoard();
   updateStatus();
@@ -360,7 +362,7 @@ function endGame(result, winLine) {
   gameState.gameActive = false;
   gameState.winner = result;
   
-  const duration = Math.round((Date.now() - startTime) / 1000);
+  const duration = Math.round((Date.now() - gameState.startTime) / 1000);
   
   if (result === 'draw') {
     statusEl.textContent = "It's a Draw!";
@@ -378,5 +380,3 @@ function endGame(result, winLine) {
     }
   }
 }
-
-let startTime = Date.now();
