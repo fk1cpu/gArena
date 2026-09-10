@@ -750,29 +750,34 @@ function finalizeDiceRoll(playerIndex) {
 }
 
 function getDiceResult(dieBody) {
-  // Get the up vector in local coordinates
+  // Get the up vector in world coordinates
   const up = new CANNON.Vec3(0, 1, 0);
+  
+  // Transform the die's local axes to world space
   const quat = dieBody.quaternion;
   
-  // Transform up vector by inverse quaternion to get which face is up
-  const localUp = quat.inverse().vmult(up);
-  
-  // Determine which face has the most positive Y component
+  // Get which face normal is most aligned with world up
+  // Face normals in local space
   const faces = [
-    new CANNON.Vec3(1, 0, 0),   // Right (1)
-    new CANNON.Vec3(-1, 0, 0),  // Left (6)
-    new CANNON.Vec3(0, 1, 0),   // Top (2)
-    new CANNON.Vec3(0, -1, 0),  // Bottom (5)
-    new CANNON.Vec3(0, 0, 1),   // Front (3)
-    new CANNON.Vec3(0, 0, -1)   // Back (4)
+    new CANNON.Vec3(0, 1, 0),   // Top face
+    new CANNON.Vec3(0, -1, 0),  // Bottom face
+    new CANNON.Vec3(1, 0, 0),   // Right face
+    new CANNON.Vec3(-1, 0, 0),  // Left face
+    new CANNON.Vec3(0, 0, 1),   // Front face
+    new CANNON.Vec3(0, 0, -1)   // Back face
   ];
   
-  const values = [1, 6, 2, 5, 3, 4];
+  // Corresponding dice values for each face
+  const values = [6, 1, 2, 5, 3, 4];
+  
   let maxDot = -Infinity;
-  let result = 1;
+  let result = 6;
   
   for (let i = 0; i < faces.length; i++) {
-    const dot = localUp.dot(faces[i]);
+    // Transform face normal to world space
+    const worldNormal = quat.vmult(faces[i]);
+    // Dot product with world up
+    const dot = worldNormal.dot(up);
     if (dot > maxDot) {
       maxDot = dot;
       result = values[i];
@@ -1066,12 +1071,14 @@ function checkCapture(playerIndex, tokenData, position, callback) {
   }
   
   // Check for opponent tokens at same position
+  let captured = false;
   for (let p = 0; p < gameState.players; p++) {
     if (p === playerIndex) continue;
     
     tokenPositions[p].forEach((oppToken, oppIdx) => {
-      if (oppToken.state === 'track' && oppToken.trackIndex === trackIdx) {
+      if (oppToken.state === 'track' && oppToken.trackIndex === trackIdx && !captured) {
         // Capture!
+        captured = true;
         AudioSys.playCapture();
         
         // Animate capture
@@ -1080,13 +1087,13 @@ function checkCapture(playerIndex, tokenData, position, callback) {
           oppToken.state = 'base';
           oppToken.trackIndex = -1;
           gameState.api.setStatus(`Captured!`);
-          callback();
         });
       }
     });
   }
   
-  callback();
+  // Wait a bit for capture animation then continue
+  setTimeout(callback, captured ? 500 : 100);
 }
 
 function animateTokenToBase(token, tokenData, playerId, callback) {
