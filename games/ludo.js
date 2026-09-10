@@ -30,24 +30,29 @@ const PLAYER_COLORS = ['red', 'green', 'yellow', 'blue'];
 const CELL_SIZE = 1;
 const BOARD_SIZE = 15;
 
-// Track positions (52 cells clockwise starting from red start)
+// Track positions (52 cells clockwise starting from red start at position 1,6)
 const TRACK_CELLS = [
-  // Red side (bottom-left quadrant area)
+  // Red side (bottom-left quadrant area) - 13 cells
   { x: 1, z: 6 }, { x: 2, z: 6 }, { x: 3, z: 6 }, { x: 4, z: 6 }, { x: 5, z: 6 },
   { x: 6, z: 5 }, { x: 6, z: 4 }, { x: 6, z: 3 }, { x: 6, z: 2 }, { x: 6, z: 1 },
-  { x: 6, z: 0 }, { x: 7, z: 0 }, // Top middle
-  { x: 8, z: 1 }, { x: 8, z: 2 }, { x: 8, z: 3 }, { x: 8, z: 4 }, { x: 8, z: 5 },
-  { x: 9, z: 6 }, { x: 10, z: 6 }, { x: 11, z: 6 }, { x: 12, z: 6 }, { x: 13, z: 6 },
-  { x: 14, z: 7 }, // Right middle
-  { x: 13, z: 8 }, { x: 12, z: 8 }, { x: 11, z: 8 }, { x: 10, z: 8 }, { x: 9, z: 8 },
-  { x: 8, z: 9 }, { x: 8, z: 10 }, { x: 8, z: 11 }, { x: 8, z: 12 }, { x: 8, z: 13 },
-  { x: 7, z: 14 }, // Bottom middle
-  { x: 6, z: 13 }, { x: 6, z: 12 }, { x: 6, z: 11 }, { x: 6, z: 10 }, { x: 6, z: 9 },
-  { x: 5, z: 8 }, { x: 4, z: 8 }, { x: 3, z: 8 }, { x: 2, z: 8 }, { x: 1, z: 8 },
-  { x: 0, z: 7 }   // Left middle
+  { x: 6, z: 0 }, { x: 7, z: 0 }, { x: 8, z: 0 },
+  // Top side - 13 cells
+  { x: 9, z: 0 }, { x: 10, z: 0 }, { x: 11, z: 0 }, { x: 12, z: 0 }, { x: 13, z: 0 },
+  { x: 14, z: 1 }, { x: 14, z: 2 }, { x: 14, z: 3 }, { x: 14, z: 4 }, { x: 14, z: 5 },
+  { x: 14, z: 6 }, { x: 14, z: 7 }, { x: 14, z: 8 },
+  // Right side - 13 cells
+  { x: 13, z: 9 }, { x: 12, z: 9 }, { x: 11, z: 9 }, { x: 10, z: 9 }, { x: 9, z: 9 },
+  { x: 8, z: 10 }, { x: 8, z: 11 }, { x: 8, z: 12 }, { x: 8, z: 13 }, { x: 8, z: 14 },
+  { x: 7, z: 14 }, { x: 6, z: 14 }, { x: 5, z: 14 },
+  // Bottom side - 13 cells
+  { x: 4, z: 14 }, { x: 3, z: 14 }, { x: 2, z: 14 }, { x: 1, z: 14 }, { x: 0, z: 13 },
+  { x: 0, z: 12 }, { x: 0, z: 11 }, { x: 0, z: 10 }, { x: 0, z: 9 }, { x: 0, z: 8 },
+  { x: 1, z: 7 }, { x: 2, z: 7 }, { x: 3, z: 7 }
 ];
 
-// Safe cells (star positions + start positions)
+// Safe cells (star positions + start positions) - indices into TRACK_CELLS
+// Start positions: 0 (red), 13 (green), 26 (yellow), 39 (blue)
+// Star positions: 8, 21, 34, 47
 const SAFE_CELLS = [0, 8, 13, 21, 26, 34, 39, 47];
 
 // Start positions for each player (index into TRACK_CELLS)
@@ -134,6 +139,10 @@ const AudioSys = {
   playCapture() { 
     this.play(200, 0.2, 'sawtooth', 0.3);
     setTimeout(() => this.play(150, 0.2, 'sawtooth', 0.3), 100);
+  },
+  playSuccess() { 
+    this.play(600, 0.1, 'sine', 0.2);
+    setTimeout(() => this.play(800, 0.15, 'sine', 0.2), 100);
   },
   playWin() {
     [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.play(f, 0.3, 'sine', 0.3), i * 150));
@@ -746,29 +755,34 @@ function finalizeDiceRoll(playerIndex) {
 }
 
 function getDiceResult(dieBody) {
-  // Get the up vector in local coordinates
+  // Get the up vector in world coordinates
   const up = new CANNON.Vec3(0, 1, 0);
+  
+  // Transform the die's local axes to world space
   const quat = dieBody.quaternion;
   
-  // Transform up vector by inverse quaternion to get which face is up
-  const localUp = quat.inverse().vmult(up);
-  
-  // Determine which face has the most positive Y component
+  // Get which face normal is most aligned with world up
+  // Face normals in local space
   const faces = [
-    new CANNON.Vec3(1, 0, 0),   // Right (1)
-    new CANNON.Vec3(-1, 0, 0),  // Left (6)
-    new CANNON.Vec3(0, 1, 0),   // Top (2)
-    new CANNON.Vec3(0, -1, 0),  // Bottom (5)
-    new CANNON.Vec3(0, 0, 1),   // Front (3)
-    new CANNON.Vec3(0, 0, -1)   // Back (4)
+    new CANNON.Vec3(0, 1, 0),   // Top face
+    new CANNON.Vec3(0, -1, 0),  // Bottom face
+    new CANNON.Vec3(1, 0, 0),   // Right face
+    new CANNON.Vec3(-1, 0, 0),  // Left face
+    new CANNON.Vec3(0, 0, 1),   // Front face
+    new CANNON.Vec3(0, 0, -1)   // Back face
   ];
   
-  const values = [1, 6, 2, 5, 3, 4];
+  // Corresponding dice values for each face
+  const values = [6, 1, 2, 5, 3, 4];
+  
   let maxDot = -Infinity;
-  let result = 1;
+  let result = 6;
   
   for (let i = 0; i < faces.length; i++) {
-    const dot = localUp.dot(faces[i]);
+    // Transform face normal to world space
+    const worldNormal = quat.vmult(faces[i]);
+    // Dot product with world up
+    const dot = worldNormal.dot(up);
     if (dot > maxDot) {
       maxDot = dot;
       result = values[i];
@@ -1062,12 +1076,14 @@ function checkCapture(playerIndex, tokenData, position, callback) {
   }
   
   // Check for opponent tokens at same position
+  let captured = false;
   for (let p = 0; p < gameState.players; p++) {
     if (p === playerIndex) continue;
     
     tokenPositions[p].forEach((oppToken, oppIdx) => {
-      if (oppToken.state === 'track' && oppToken.trackIndex === trackIdx) {
+      if (oppToken.state === 'track' && oppToken.trackIndex === trackIdx && !captured) {
         // Capture!
+        captured = true;
         AudioSys.playCapture();
         
         // Animate capture
@@ -1076,13 +1092,13 @@ function checkCapture(playerIndex, tokenData, position, callback) {
           oppToken.state = 'base';
           oppToken.trackIndex = -1;
           gameState.api.setStatus(`Captured!`);
-          callback();
         });
       }
     });
   }
   
-  callback();
+  // Wait a bit for capture animation then continue
+  setTimeout(callback, captured ? 500 : 100);
 }
 
 function animateTokenToBase(token, tokenData, playerId, callback) {

@@ -9,7 +9,8 @@ let gameState = {
   cols: 7,
   currentPlayer: 'red',
   gameActive: true,
-  winner: null
+  winner: null,
+  startTime: 0
 };
 
 let boardEl, statusEl, probBarEl;
@@ -59,10 +60,13 @@ export function mount(boardWrap, gameApi, config = {}) {
         padding: 10px;
         border-radius: 12px;
         box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        display: grid;
+        grid-template-columns: repeat(7, 50px);
+        gap: 5px;
       }
       .c4-column {
         display: flex;
-        flex-direction: column;
+        flex-direction: column-reverse;
         gap: 5px;
         cursor: pointer;
         padding: 5px;
@@ -120,6 +124,7 @@ function initGame() {
   gameState.currentPlayer = 'red';
   gameState.gameActive = true;
   gameState.winner = null;
+  gameState.startTime = Date.now();
   
   renderBoard();
   updateStatus();
@@ -135,7 +140,7 @@ function renderBoard() {
     colEl.dataset.col = col;
     colEl.addEventListener('click', () => dropPiece(col));
     
-    for (let row = gameState.rows - 1; row >= 0; row--) {
+    for (let row = 0; row < gameState.rows; row++) {
       const cell = document.createElement('div');
       cell.className = 'c4-cell';
       if (gameState.board[row][col]) {
@@ -360,7 +365,7 @@ function endGame(result, winLine) {
   gameState.gameActive = false;
   gameState.winner = result;
   
-  const duration = Math.round((Date.now() - startTime) / 1000);
+  const duration = Math.round((Date.now() - gameState.startTime) / 1000);
   
   if (result === 'draw') {
     statusEl.textContent = "It's a Draw!";
@@ -378,5 +383,3 @@ function endGame(result, winLine) {
     }
   }
 }
-
-let startTime = Date.now();
