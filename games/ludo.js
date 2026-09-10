@@ -135,6 +135,10 @@ const AudioSys = {
     this.play(200, 0.2, 'sawtooth', 0.3);
     setTimeout(() => this.play(150, 0.2, 'sawtooth', 0.3), 100);
   },
+  playSuccess() { 
+    this.play(600, 0.1, 'sine', 0.2);
+    setTimeout(() => this.play(800, 0.15, 'sine', 0.2), 100);
+  },
   playWin() {
     [523, 659, 784, 1047].forEach((f, i) => setTimeout(() => this.play(f, 0.3, 'sine', 0.3), i * 150));
   }
